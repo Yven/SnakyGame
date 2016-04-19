@@ -1,14 +1,3 @@
-/**
-1. 所有对窗口进行的操作都必须在initscr()函数中进行、
-    包括读取全局变量的值
-
-2. newwin(height, weight, Y, X);
-    基本上所有的函数参数都是以Y，X顺序传入的 
-
-3. 函数默认操作stdscr窗体变量
-    在函数前加w能操作自定义的子窗体
-*/
-
 #include <ncurses.h>
 #include <signal.h>
 #include <unistd.h>
@@ -26,7 +15,7 @@ int DirX = 1, DirY = 0;
 int Count = 0;
 int TimerM = 4, TimerH = 4;
 
-// 生成并显示食物
+// create the food and display it
 void CreateFood(){
     do{
         Food->y = (rand()%(HGAME-2)) + 1;
@@ -36,7 +25,7 @@ void CreateFood(){
     wrefresh(PanelGame);
 }
 
-// 初始化蛇
+// create and initialize the sanke list
 void CreateLinkList(){
     Snake SnakeBody = malloc(sizeof(struct Node));
     SnakePos = malloc(sizeof(struct Position));
@@ -50,7 +39,7 @@ void CreateLinkList(){
     wrefresh(PanelGame);
 }
 
-// 游戏结束
+// game over display
 void GameOver(){
     Snake Temp = SnakePos->Head;
     Snake Temp2;
@@ -71,7 +60,8 @@ void GameOver(){
     delwin(PanelGame);
     endwin();
 }
-// 添加蛇头节点
+
+// insert the snake body
 void InsertNode(int PosY, int PosX){
     Snake NewSnake = malloc(sizeof(struct Node));
     NewSnake->y = PosY;
@@ -82,7 +72,7 @@ void InsertNode(int PosY, int PosX){
     SnakePos->Head = NewSnake;
 }
 
-// 删除蛇尾节点
+// delete the node of snake in its tail
 void DeleteNode(){
     Snake Temp = SnakePos->Tail;
     SnakePos->Tail = SnakePos->Tail->Front;
@@ -90,7 +80,7 @@ void DeleteNode(){
     free(Temp);
 }
 
-// 控制蛇方向
+// control the snake move and snake's direction and judge game over
 void MoveSnake(){
     int Moved = 0;
     int LenghtAdd = 0;
@@ -140,7 +130,7 @@ void MoveSnake(){
     signal(SIGALRM, MoveSnake);
 }
 
-// 键盘控制
+// key response
 void KeyResponse(){
     char ch;
     while((ch = getch()) != 'q'){
@@ -176,7 +166,7 @@ void KeyResponse(){
     }
 }
 
-// 设置闹钟时间间隔
+// set the alrm clock's time
 int SetTrick(){
     struct itimerval trick;
     memset(&trick, 0, sizeof(struct itimerval)); 
@@ -191,7 +181,7 @@ int SetTrick(){
     return setitimer(ITIMER_REAL, &trick, NULL);
 }
 
-// 初始化屏幕设置
+// initialize the panel setting
 void Inital(){
     initscr();
     cbreak();
