@@ -4,6 +4,8 @@
 #include <sys/time.h>
 #include <stdlib.h>
 #include <string.h>
+#include "Panel.h"
+#include "Snake.h"
 #include "Demo.h"
  
 WINDOW *PanelCount;
@@ -14,6 +16,24 @@ FoodPos Food;
 int DirX = 1, DirY = 0;
 int Count = 0;
 int TimerM = 4, TimerH = 4;
+
+int main(int argc, char *argv[]) {
+    srand((unsigned)time(NULL));
+    Food = malloc(sizeof(struct Food));
+    
+    Inital();
+    PanelSet();
+    
+    CreateFood();
+    CreateLinkList();
+    signal(SIGALRM, MoveSnake);
+    SetTrick();
+    KeyResponse();
+    
+    Destroy();
+    
+    return 0;
+}
 
 // create the food and display it
 void CreateFood(){
@@ -43,7 +63,6 @@ void CreateLinkList(){
 void GameOver(){
     Snake Temp = SnakePos->Head;
     Snake Temp2;
-    // wclear(PanelGame);
     mvwaddstr(PanelGame, HGAME/2, WGAME/2 - 4, "Game Over!");
     mvwaddstr(PanelGame, HGAME/2 + 1, WGAME/2 - 9, "Press any key to quit.");
     Count = 0;
@@ -56,9 +75,7 @@ void GameOver(){
         Temp = Temp->Next;
     }
     getch();
-    delwin(PanelCount);
-    delwin(PanelGame);
-    endwin();
+    Destroy();
 }
 
 // insert the snake body
@@ -93,13 +110,15 @@ void MoveSnake(){
     if(TimerM > 0 && TimerH-- == 1){
         InsertNode(SnakePos->Head->y+DirY, SnakePos->Head->x+DirX);
         TimerH = TimerM;
+        mvwprintw(PanelCount, 3, 1, "Count: %d             Speed: %d", Count, TimerM);
+        wrefresh(PanelCount);
         Moved = 1;
     }
     
     if(Moved){
         if(Food->y == SnakePos->Head->y && Food->x == SnakePos->Head->x){
             Count++;
-            mvwprintw(PanelCount, 3, 1, "Count: %d", Count);
+            mvwprintw(PanelCount, 3, 1, "Count: %d             Speed: %d", Count, TimerM);
             wrefresh(PanelCount);
             LenghtAdd = 1;
             CreateFood();
@@ -191,43 +210,29 @@ void Inital(){
     refresh();
 }
 
-int main(int argc, char *argv[]) {
-    int GameY, GameX;
+// panel setting
+void PanelSet(){
     int CountY, CountX;
-    srand((unsigned)time(NULL));
-    
-    // 初始化curses1
-    Inital();
-    
+    int GameY, GameX;
     CountY = 1;
     CountX = (COLS - WCOUNT) / 2;
     GameY = HCOUNT + 2;
     GameX = (COLS - WGAME) / 2;
     
-    // 初始化计分面板和游戏窗体
     PanelCount = newwin(HCOUNT, WCOUNT, CountY, CountX);
     PanelGame = newwin(HGAME, WGAME, GameY, GameX);
     box(PanelCount, 0, 0);
     box(PanelGame, 0, 0);
-    mvwaddstr(PanelCount, 1, 1, "Press 'q' to quit.             Version: 0.2.0");
-    mvwaddstr(PanelCount, 2, 1, "wasd to control snake and ,. to control speed ");
-    mvwprintw(PanelCount, 3, 1, "Count: %d", Count);
+    mvwaddstr(PanelCount, 1, 1, VERSION);
+    mvwaddstr(PanelCount, 2, 1, INTRODUCTION);
+    mvwprintw(PanelCount, 3, 1, "Count: %d             Speed: %d", Count, TimerM);
     wrefresh(PanelCount);
     wrefresh(PanelGame);
-    
-    Food = malloc(sizeof(struct Food));
-    
-    // 游戏循环
-    CreateFood();
-    CreateLinkList();
-    signal(SIGALRM, MoveSnake);
-    SetTrick();
-    KeyResponse();
-    
-    // 清楚窗体内存，退出curses模式
+}
+
+// distroy the panel memorize
+void Destroy(){
     delwin(PanelCount);
     delwin(PanelGame);
     endwin();
-    
-    return 0;
 }
