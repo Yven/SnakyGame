@@ -3,6 +3,11 @@
 #define WCOUNT 50
 #define HCOUNT 5
 #define SPEED 50
+#define SNAKEUP '^'
+#define SNAKEDOWN 'V'
+#define SNAKERIGHT '>'
+#define SNAKELEFT '<'
+#define FOOD '*'
 
 struct Node;
 struct Position;

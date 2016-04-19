@@ -31,7 +31,7 @@ void CreateFood(){
     do{
         Food->y = (rand()%(HGAME-2)) + 1;
         Food->x = (rand()%(WGAME-2)) + 1;
-    }while(mvwinch(PanelGame, Food->y, Food->x) == SNAKEUP || PanelGame, Food->y, Food->x) == SNAKEDOWN || PanelGame, Food->y, Food->x) == SNAKELEFT || PanelGame, Food->y, Food->x) == SNAKERIGHT);
+    }while(mvwinch(PanelGame, Food->y, Food->x) == SNAKEUP || mvwinch(PanelGame, Food->y, Food->x) == SNAKEDOWN || mvwinch(PanelGame, Food->y, Food->x) == SNAKELEFT || mvwinch(PanelGame, Food->y, Food->x) == SNAKERIGHT);
     mvwaddch(PanelGame, Food->y, Food->x, FOOD);
     wrefresh(PanelGame);
 }
@@ -96,7 +96,7 @@ void MoveSnake(){
     int LenghtAdd = 0;
     signal(SIGALRM, SIG_IGN);
     
-    if(mvwinch(PanelGame, SnakePos->Head->y+DirY, SnakePos->Head->x+DirX) == SNAKE){
+    if(mvwinch(PanelGame, SnakePos->Head->y+DirY, SnakePos->Head->x+DirX) == SNAKEUP || mvwinch(PanelGame, SnakePos->Head->y+DirY, SnakePos->Head->x+DirX) == SNAKEDOWN || mvwinch(PanelGame, SnakePos->Head->y+DirY, SnakePos->Head->x+DirX) == SNAKELEFT || mvwinch(PanelGame, SnakePos->Head->y+DirY, SnakePos->Head->x+DirX) == SNAKERIGHT){
         GameOver();
     }
     
@@ -127,13 +127,13 @@ void MoveSnake(){
             DeleteNode();
         }
         if(DirY == -1 && DirX == 0){
-            mvwaddch(PanelGame, SnakePos->Head->y, SnakePos->Head->x, SNAKE);
+            mvwaddch(PanelGame, SnakePos->Head->y, SnakePos->Head->x, SNAKEUP);
         }else if(DirY == 1 && DirX == 0){
-            
+            mvwaddch(PanelGame, SnakePos->Head->y, SnakePos->Head->x, SNAKEDOWN);
         }else if(DirY == 0 && DirX == -1){
-            
+            mvwaddch(PanelGame, SnakePos->Head->y, SnakePos->Head->x, SNAKELEFT);
         }else if(DirY == 0 && DirX == 1){
-            
+            mvwaddch(PanelGame, SnakePos->Head->y, SnakePos->Head->x, SNAKERIGHT);
         }
         wrefresh(PanelGame);
     }
@@ -219,7 +219,7 @@ int main(int argc, char *argv[]) {
     PanelGame = newwin(HGAME, WGAME, GameY, GameX);
     box(PanelCount, 0, 0);
     box(PanelGame, 0, 0);
-    mvwaddstr(PanelCount, 1, 1, "Press 'q' to quit.             Version: 0.1.0");
+    mvwaddstr(PanelCount, 1, 1, "Press 'q' to quit.             Version: 0.2.0");
     mvwaddstr(PanelCount, 2, 1, "wasd to control snake and ,. to control speed ");
     mvwprintw(PanelCount, 3, 1, "Count: %d", Count);
     wrefresh(PanelCount);
