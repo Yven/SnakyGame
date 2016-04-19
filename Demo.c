@@ -28,13 +28,11 @@ int TimerM = 4, TimerH = 4;
 
 // 生成并显示食物
 void CreateFood(){
-    // Food->y = rand()%(HGAME-2) + 1;
-    // Food->x = rand()%(WGAME-2) + 1;
     do{
         Food->y = (rand()%(HGAME-2)) + 1;
         Food->x = (rand()%(WGAME-2)) + 1;
-    }while(mvwinch(PanelGame, Food->y, Food->x) == '@');
-    mvwprintw(PanelGame, Food->y, Food->x, "*");
+    }while(mvwinch(PanelGame, Food->y, Food->x) == SNAKEUP || PanelGame, Food->y, Food->x) == SNAKEDOWN || PanelGame, Food->y, Food->x) == SNAKELEFT || PanelGame, Food->y, Food->x) == SNAKERIGHT);
+    mvwaddch(PanelGame, Food->y, Food->x, FOOD);
     wrefresh(PanelGame);
 }
 
@@ -48,7 +46,7 @@ void CreateLinkList(){
     SnakeBody->Front = NULL;
     SnakePos->Head = SnakeBody;
     SnakePos->Tail = SnakeBody;
-    mvwaddch(PanelGame, SnakeBody->y, SnakeBody->x, '@');
+    mvwaddch(PanelGame, SnakeBody->y, SnakeBody->x, SNAKERIGHT);
     wrefresh(PanelGame);
 }
 
@@ -98,7 +96,7 @@ void MoveSnake(){
     int LenghtAdd = 0;
     signal(SIGALRM, SIG_IGN);
     
-    if(mvwinch(PanelGame, SnakePos->Head->y+DirY, SnakePos->Head->x+DirX) == '@'){
+    if(mvwinch(PanelGame, SnakePos->Head->y+DirY, SnakePos->Head->x+DirX) == SNAKE){
         GameOver();
     }
     
@@ -128,7 +126,15 @@ void MoveSnake(){
             mvwaddch(PanelGame, SnakePos->Tail->y, SnakePos->Tail->x, ' ');
             DeleteNode();
         }
-        mvwaddch(PanelGame, SnakePos->Head->y, SnakePos->Head->x, '@');
+        if(DirY == -1 && DirX == 0){
+            mvwaddch(PanelGame, SnakePos->Head->y, SnakePos->Head->x, SNAKE);
+        }else if(DirY == 1 && DirX == 0){
+            
+        }else if(DirY == 0 && DirX == -1){
+            
+        }else if(DirY == 0 && DirX == 1){
+            
+        }
         wrefresh(PanelGame);
     }
     signal(SIGALRM, MoveSnake);
