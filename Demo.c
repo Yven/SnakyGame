@@ -23,15 +23,17 @@ WINDOW *PanelGame;
 PosHead SnakePos;
 FoodPos Food;
 int DirX = 1, DirY = 0;
+int Count = 0;
+int TimerM = 4, TimerH = 4;
 
 // 生成并显示食物
 void CreateFood(){
-    Food->y = rand()%(HGAME-2) + 1;
-    Food->x = rand()%(WGAME-2) + 1;
-    while(mvwinch(PanelGame, Food->y, Food->x) == '@'){
-        Food->y = rand()%(HGAME-2) + 1;
-        Food->x = rand()%(WGAME-2) + 1;
-    }
+    // Food->y = rand()%(HGAME-2) + 1;
+    // Food->x = rand()%(WGAME-2) + 1;
+    do{
+        Food->y = (rand()%(HGAME-2)) + 1;
+        Food->x = (rand()%(WGAME-2)) + 1;
+    }while(mvwinch(PanelGame, Food->y, Food->x) == '@');
     mvwprintw(PanelGame, Food->y, Food->x, "*");
     wrefresh(PanelGame);
 }
@@ -46,7 +48,7 @@ void CreateLinkList(){
     SnakeBody->Front = NULL;
     SnakePos->Head = SnakeBody;
     SnakePos->Tail = SnakeBody;
-    mvwprintw(PanelGame, SnakeBody->y, SnakeBody->x, "@");
+    mvwaddch(PanelGame, SnakeBody->y, SnakeBody->x, '@');
     wrefresh(PanelGame);
 }
 
@@ -54,8 +56,12 @@ void CreateLinkList(){
 void GameOver(){
     Snake Temp = SnakePos->Head;
     Snake Temp2;
-    wclear(PanelGame);
-    mvwaddstr(PanelGame, HGAME/2, WGAME/2, "Game Over!");
+    // wclear(PanelGame);
+    mvwaddstr(PanelGame, HGAME/2, WGAME/2 - 4, "Game Over!");
+    mvwaddstr(PanelGame, HGAME/2 + 1, WGAME/2 - 9, "Press any key to quit.");
+    Count = 0;
+    mvwprintw(PanelCount, 3, 1, "Count: %d", Count);
+    wrefresh(PanelCount);
     wrefresh(PanelGame);
     while(Temp->Next != NULL){
         Temp2 = Temp;
@@ -67,14 +73,14 @@ void GameOver(){
     delwin(PanelGame);
     endwin();
 }
-
 // 添加蛇头节点
-void InsertNode(int PosX, int PosY){
+void InsertNode(int PosY, int PosX){
     Snake NewSnake = malloc(sizeof(struct Node));
     NewSnake->y = PosY;
     NewSnake->x = PosX;
     NewSnake->Front = NULL;
     NewSnake->Next = SnakePos->Head;
+    SnakePos->Head->Front = NewSnake;
     SnakePos->Head = NewSnake;
 }
 
@@ -88,92 +94,74 @@ void DeleteNode(){
 
 // 控制蛇方向
 void MoveSnake(){
-    int Length_Flag = 0;
+    int Moved = 0;
+    int LenghtAdd = 0;
     signal(SIGALRM, SIG_IGN);
     
-    if((SnakePos->Head->x == WGAME-1 && DirX == 1)   
-        || (SnakePos->Head->x == 1 && DirX == -1)  
-        || (SnakePos->Head->y == 1 && DirY == -1)  
-        || (SnakePos->Head->y == HGAME-1 && DirY == 1)){  
+    if(mvwinch(PanelGame, SnakePos->Head->y+DirY, SnakePos->Head->x+DirX) == '@'){
         GameOver();
     }
-
-    if(mvinch(SnakePos->Head->y+DirY, SnakePos->Head->x+DirX) == '@')
-        GameOver();
-  
-    InsertNode(SnakePos->Head->x+DirX, SnakePos->Head->y+DirY);
     
-    if(SnakePos->Head->x == Food->x && SnakePos->Head->y == Food->y){
-        Length_Flag = 1;
-        CreateFood();
+    if(TimerM > 0 && TimerH-- == 1){
+        InsertNode(SnakePos->Head->y+DirY, SnakePos->Head->x+DirX);
+        TimerH = TimerM;
+        Moved = 1;
     }
-    if(Length_Flag == 0){
-        mvaddch(SnakePos->Tail->y, SnakePos->Tail->x, ' ');
-        DeleteNode();
+    
+    if(Moved){
+        if(Food->y == SnakePos->Head->y && Food->x == SnakePos->Head->x){
+            Count++;
+            mvwprintw(PanelCount, 3, 1, "Count: %d", Count);
+            wrefresh(PanelCount);
+            LenghtAdd = 1;
+            CreateFood();
+        }else if(SnakePos->Head->y == 0 && DirY == -1){
+            SnakePos->Head->y = HGAME-2;
+        }else if(SnakePos->Head->y == HGAME-1 && DirY == 1){
+            SnakePos->Head->y = 1;
+        }else if(SnakePos->Head->x == 0 && DirX == -1){
+            SnakePos->Head->x = WGAME-2;
+        }else if(SnakePos->Head->x == WGAME-1 && DirX == 1){
+            SnakePos->Head->x = 1;
+        }
+        if(!LenghtAdd){
+            mvwaddch(PanelGame, SnakePos->Tail->y, SnakePos->Tail->x, ' ');
+            DeleteNode();
+        }
+        mvwaddch(PanelGame, SnakePos->Head->y, SnakePos->Head->x, '@');
+        wrefresh(PanelGame);
     }
-    mvaddch(SnakePos->Head->y, SnakePos->Head->x, '@');
-    wrefresh(PanelGame);
-
     signal(SIGALRM, MoveSnake);
-    
-    
-    
-    // int LenghtAdd = 0;
-    // signal(SIGALRM, SIG_IGN);
-    // 
-    // if(mvwinch(PanelGame, SnakePos->Head->y+DirY, SnakePos->Head->x+DirX) == '@'){
-    //     // 蛇身
-    //     GameOver();
-    // }
-    // 
-    // if(Food->y == SnakePos->Head->y+DirY && Food->x == SnakePos->Head->x+DirX){
-    //     // 食物
-    //     LenghtAdd = 1;
-    //     CreateFood();
-    // }else if(SnakePos->Head->y+DirY == 1){
-    //     SnakePos->Head->y = HGAME-1;
-    //     // 墙壁上
-    // }else if(SnakePos->Head->y+DirY == HGAME-1){
-    //     SnakePos->Head->y = 1;
-    //     // 墙壁下
-    // }else if(SnakePos->Head->x+DirX == 1){
-    //     SnakePos->Head->x = WGAME-1;
-    //     // 墙壁左
-    // }else if(SnakePos->Head->x+DirX == WGAME-1){
-    //     SnakePos->Head->x = 1;
-    //     // 墙壁右
-    // }
-    // if(!LenghtAdd){
-    //     mvwaddch(PanelGame, SnakePos->Tail->y, SnakePos->Tail->x, ' ');
-    //     DeleteNode();
-    // }
-    // mvwaddch(PanelGame, SnakePos->Head->y+DirY, SnakePos->Head->x+DirX, '@');
-    // InsertNode(SnakePos->Head->y+DirY, SnakePos->Head->x+DirX);
-    // wrefresh(PanelGame);
-    // 
-    // signal(SIGALRM, MoveSnake);
 }
 
 // 键盘控制
 void KeyResponse(){
     char ch;
     while((ch = getch()) != 'q'){
-        if(ch == 'w'){
-            if(DirY != 1){
+        if(ch == '.'){
+            if(TimerM > 1){
+                TimerM--;
+            }
+        }else if(ch == ','){
+            if(TimerM < 8){
+                TimerM++;
+            }
+        }else if(ch == 'w'){
+            if(DirY != 1 && DirX != 0){
                 DirY = -1;
                 DirX = 0;
             }
         }else if(ch == 's'){
-            if(DirY != -1){
+            if(DirY != -1 && DirX != 0){
                 DirY = 1;
                 DirX = 0;
             }
-        }else if(ch == 'a'){
+        }else if(ch == 'a' && DirY != 0){
             if(DirX != 1){
                 DirY = 0;
                 DirX = -1;
             }
-        }else if(ch == 'd'){
+        }else if(ch == 'd' && DirY != 0){
             if(DirX != -1){
                 DirY = 0;
                 DirX = 1;
@@ -210,8 +198,7 @@ void Inital(){
 int main(int argc, char *argv[]) {
     int GameY, GameX;
     int CountY, CountX;
-    int Count = 0;
-    srand(time(NULL));
+    srand((unsigned)time(NULL));
     
     // 初始化curses1
     Inital();
@@ -226,8 +213,8 @@ int main(int argc, char *argv[]) {
     PanelGame = newwin(HGAME, WGAME, GameY, GameX);
     box(PanelCount, 0, 0);
     box(PanelGame, 0, 0);
-    mvwprintw(PanelCount, 1, 1, "Press 'q' to quit.");
-    mvwprintw(PanelCount, 2, 1, "Press 'w','a','s' and 'd' to control snake move.");
+    mvwaddstr(PanelCount, 1, 1, "Press 'q' to quit.             Version: 0.1.0");
+    mvwaddstr(PanelCount, 2, 1, "wasd to control snake and ,. to control speed ");
     mvwprintw(PanelCount, 3, 1, "Count: %d", Count);
     wrefresh(PanelCount);
     wrefresh(PanelGame);
@@ -240,12 +227,7 @@ int main(int argc, char *argv[]) {
     signal(SIGALRM, MoveSnake);
     SetTrick();
     KeyResponse();
-    // while(1){
-    //     mvwprintw(PanelGame, HGAME/2, WGAME/2, "hehe");
-    // }
     
-    // getch();
-
     // 清楚窗体内存，退出curses模式
     delwin(PanelCount);
     delwin(PanelGame);
