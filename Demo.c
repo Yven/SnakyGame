@@ -4,8 +4,6 @@
 #include <sys/time.h>
 #include <stdlib.h>
 #include <string.h>
-#include "Panel.h"
-#include "Snake.h"
 #include "Demo.h"
  
 WINDOW *PanelCount;
@@ -152,6 +150,7 @@ void MoveSnake(){
 // key response
 void KeyResponse(){
     char ch;
+    int TimerMTemp;
     while((ch = getch()) != 'q'){
         if(ch == '.'){
             if(TimerM > 1){
@@ -180,6 +179,13 @@ void KeyResponse(){
             if(DirX != -1){
                 DirY = 0;
                 DirX = 1;
+            }
+        }else if(ch == 'p'){
+            if(TimerM){
+                TimerMTemp = TimerM;
+                TimerM = 0;
+            }else{
+                TimerM = TimerMTemp;
             }
         }
     }

@@ -8,8 +8,8 @@
 #define SNAKERIGHT   '>'
 #define SNAKELEFT    '<'
 #define FOOD         '*'
-#define VERSION      "version: 0.2.0       Author:Yven"
-#define INTRODUCTION "wasd=>direction ,.=>speed q=>quit"
+#define VERSION      "version: 0.2.1                 Author:Yven"
+#define INTRODUCTION "wasd=>direction ,.=>speed q=>quit p=>pause"
 
 struct Node;
 struct Position;
